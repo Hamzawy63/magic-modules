@@ -124,8 +124,6 @@ properties:
     update_url: 'projects/{{project}}/targetHttpsProxies/{{name}}/setSslCertificates'
     item_type: !ruby/object:Api::Type::ResourceRef
       name: 'sslCertificate'
-      resource: 'SslCertificate'
-      imports: 'selfLink'
       description: 'The SSL certificate URL or Certificate Manager certificate resource URL used by this TargetHttpsProxy'
     custom_expand: 'templates/terraform/custom_expand/array_resourceref_with_validation.go.erb'
   - !ruby/object:Api::Type::String
