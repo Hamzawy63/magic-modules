@@ -1,0 +1,41 @@
+<%# Copyright 2023 Google Inc.
+# Licensed under the Apache License, Version 2.0 (the 'License');
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an 'AS IS' BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+-%>
+func expand<%= prefix -%><%= titlelize_property(property) -%>(v interface{}, d tpgresource.TerraformResourceData, config *transport_tpg.Config) (interface{}, error) {
+<%  if property.is_set -%>
+  v = v.(*schema.Set).List()
+<%  end -%>
+  l := v.([]interface{})
+  req := make([]interface{}, 0, len(l))
+  for _, raw := range l {
+    if raw == nil {
+      return nil, fmt.Errorf("Invalid value for <%= property.name.underscore -%>: nil")
+    }
+
+    if strings.HasPrefix(raw.(string), "https://") {
+      // Any full URL will be passed to the API request (regardless of the resource type). This is to allow self_links of CertificateManagerCeritificate resources. 
+      req = append(req, raw.(string))
+    } else if  pattern := regexp.MustCompile(`^projects\/[\w-]+/locations\/[\w-]+/certificates\/[\w-]+$`); pattern.MatchString(raw.(string)) {
+      // This is the id pattern of CertificateManagerCertificate resources, a prefix will be added to construct the full URL before constructing the API request
+      self_link := "https://certificatemanager.googleapis.com/v1/" + raw.(string)
+      req = append(req, self_link)
+    } else {
+      f, err := <%= build_expand_resource_ref('raw.(string)', property.item_type, pwd) %>
+      if err != nil {
+        return nil, fmt.Errorf("Invalid value for <%= property.name.underscore -%>: %s", err)
+      }
+      req = append(req, f.RelativeLink())
+    }
+  }
+  return req, nil
+}
