@@ -15,8 +15,8 @@ resource "google_certificate_manager_certificate" "default" {
 }
 
 resource "google_compute_url_map" "default" {
-  name        = "<%= ctx[:vars]['url_map_name'] %>"
-  description = "a description"
+  name            = "<%= ctx[:vars]['url_map_name'] %>"
+  description     = "a description"
 
   default_service = google_compute_backend_service.default.id
 
